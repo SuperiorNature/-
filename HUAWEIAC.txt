@@ -1,0 +1,57 @@
+radius-server template nington
+ radius-server shared-key cipher admin@123
+ radius-server authentication 172.16.11.195 1812 weight 80
+ radius-server accounting 172.16.11.195 1813 weight 80
+ undo radius-server user-name domain-included
+quit
+#
+radius-server authorization 172.16.11.195 shared-key cipher admin@123
+#radius-server authorization server-source all-interface
+#
+aaa
+authentication-scheme nington
+authentication-mode radius
+quit
+authorization-scheme nington        
+authorization-mode if-authenticated
+quit
+accounting-scheme nington
+accounting-mode radius
+accounting realtime 30
+accounting start-fail online
+quit
+#
+url-template name nington
+url  http://172.16.11.195:8080/am/portal/serviceId/SN240618481698/ac/SH_HW_AC/ssid/innostar-ad ssid innostar-ad
+url-parameter redirect-url redirect-url ssid ssid user-mac usermac user-ipaddress userip 
+#
+web-auth-server nington
+server-ip 172.16.11.195
+port 50100
+shared-key cipher admin@123
+url-template nington
+#
+web-auth-server source-ip 172.16.113.253
+web-auth-server server-source all-interface
+#
+portal-access-profile name nington
+ web-auth-server nington direct
+quit
+#
+free-rule-template name nington
+free-rule 1 destination ip 172.16.11.195 mask 255.255.255.255
+free-rule 2 destination ip 114.114.114.114 mask 255.255.255.255
+free-rule 3 destination ip 223.5.5.5 mask 255.255.255.255
+quit 
+#
+mac-access-profile name nington
+#
+authentication-profile name nington
+ authentication ip-address in-accounting-start
+ mac-access-profile nington
+ portal-access-profile nington
+ free-rule-template nington
+ authentication-scheme nington
+ accounting-scheme nington
+ authorization-scheme nington
+#
